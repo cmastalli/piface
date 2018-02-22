@@ -13,16 +13,16 @@ class HyQ:
     # Define the nominal position
     self.q0 = np.zeros((19, 1))
     self.q0[6] = 1.
-    self.q0[7+0] = -0.2
+#    self.q0[7+0] = -0.2
     self.q0[7+1] = 0.75
     self.q0[7+2] = -1.5
-    self.q0[7+3] = -0.2
-    self.q0[7+4] = 0.75
-    self.q0[7+5] = -1.5
-    self.q0[7+6] = -0.2
-    self.q0[7+7] = -0.75
-    self.q0[7+8] = 1.5
-    self.q0[7+9] = -0.2
+#    self.q0[7+3] = -0.2
+    self.q0[7+4] = -0.75
+    self.q0[7+5] = 1.5
+#    self.q0[7+6] = -0.2
+    self.q0[7+7] = 0.75
+    self.q0[7+8] = -1.5
+#    self.q0[7+9] = -0.2
     self.q0[7+10] = -0.75
     self.q0[7+11] = 1.5
 
