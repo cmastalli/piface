@@ -1,6 +1,6 @@
-from hrp2 import HRP2
 import numpy as np
 import pinocchio as pin
+
 
 class CenterOfPressure:
     def __init__(self, robot_wrap):
@@ -34,12 +34,12 @@ class CenterOfPressure:
         # p = (f^lf_z * p^lf + f^rf_z * p^rf) / (f^lf_z + f^rf_z)
         fz_lf = np.asscalar(self.wrench_LF_W[2])
         fz_rf = np.asscalar(self.wrench_RF_W[2])
-        cop = (fz_lf * cop_lf_W + fz_rf * cop_rf_W) / (fz_lf + fz_rf)
-        return cop
+        self.cop = (fz_lf * cop_lf_W + fz_rf * cop_rf_W) / (fz_lf + fz_rf)
+        return self.cop
 
     def computeThroughFootWrenches(self, wrench_lf, wrench_rf):
-        w_X_lf = self.robot.data.oMi[cop.robot.bodyToIdx['lf']]
-        w_X_rf = self.robot.data.oMi[cop.robot.bodyToIdx['rf']]
+        w_X_lf = self.robot.data.oMi[self.robot.bodyToIdx['lf']]
+        w_X_rf = self.robot.data.oMi[self.robot.bodyToIdx['rf']]
         self.wrench_lf_W = w_X_lf.act(pin.Force(wrench_lf[:3], wrench_lf[3:]))
         self.wrench_rf_W = w_X_rf.act(pin.Force(wrench_rf[:3], wrench_rf[3:]))
         self.wrench_T = (self.wrench_lf_W + self.wrench_rf_W).vector
@@ -60,25 +60,3 @@ class CenterOfPressure:
         cop[0] = -wrench.angular[1] / wrench.linear[2];
         cop[1] =  wrench.angular[0] / wrench.linear[2];
         return cop
-        
-
-import pickle
-from dynamic_graph.sot.torque_control.hrp2.sot_utils import config_sot_to_urdf
-
-# Getting the data to analyses
-filename = '/home/cmastall/data/iparams-id/cd1.txt'
-data = pickle.load(open(filename))
-
-for d in data:
-    q = config_sot_to_urdf(np.asmatrix(d.q))
-    wrench_lf = d.f_lf
-    wrench_rf = d.f_rf
-
-    # Evaluation of the center of pressure from different methods
-    hrp2 = HRP2()
-    hrp2.update(q)
-    cop = CenterOfPressure(hrp2)
-
-    print 'foot wrenches', cop.compute(wrench_lf, wrench_rf, 'FootWrenches').T
-    print 'foot cops    ', cop.compute(wrench_lf, wrench_rf, 'FootCoPs').T
-    print '---'
