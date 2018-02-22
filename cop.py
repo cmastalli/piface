@@ -5,9 +5,17 @@ import pinocchio as pin
 class CenterOfPressure:
     def __init__(self, robot_wrap):
         self.robot = robot_wrap
-        
 
-    def computeCoP(self, wrench_lf, wrench_rf):
+    def compute(self, wrench_lf, wrench_rf, method='FootWrenches'):
+        if method == 'FootWrenches':
+            cop = self.computeThroughFootWrenches(wrench_lf, wrench_rf)
+        elif method == 'FootCoPs':
+            cop = self.computeThroughFootCoPs(wrench_lf, wrench_rf)
+        else:
+            cop = self.computeThroughFootWrenches(wrench_lf, wrench_rf)
+        return cop
+
+    def computeThroughFootCoPs(self, wrench_lf, wrench_rf):
         self.wrench_LF = wrench_lf
         self.wrench_RF = wrench_rf
         cop_lf = self.computeCoPFromWrench(self.wrench_LF)
@@ -28,16 +36,15 @@ class CenterOfPressure:
         fz_rf = np.asscalar(self.wrench_RF_W[2])
         cop = (fz_lf * cop_lf_W + fz_rf * cop_rf_W) / (fz_lf + fz_rf)
         return cop
-    
-    def computeCoP2(self, wrench_lf, wrench_rf):
+
+    def computeThroughFootWrenches(self, wrench_lf, wrench_rf):
         w_X_lf = self.robot.data.oMi[cop.robot.bodyToIdx['lf']]
         w_X_rf = self.robot.data.oMi[cop.robot.bodyToIdx['rf']]
         self.wrench_lf_W = w_X_lf.act(pin.Force(wrench_lf[:3], wrench_lf[3:]))
         self.wrench_rf_W = w_X_rf.act(pin.Force(wrench_rf[:3], wrench_rf[3:]))
         self.wrench_T = (self.wrench_lf_W + self.wrench_rf_W).vector
-        
         return self.computeCoPFromWrench(self.wrench_T)
-        
+
     def computeCoPFromWrench(self, wrench):
         cop = np.matrix([0., 0., 0.]).T
 #        self.FOOT_FORCE_SENSOR_XYZ = np.matrix([0.0,   0.0, -0.085]).T
@@ -52,7 +59,6 @@ class CenterOfPressure:
         # which simplifies is p = [-tau_y, tau_x] / f_z
         cop[0] = -wrench.angular[1] / wrench.linear[2];
         cop[1] =  wrench.angular[0] / wrench.linear[2];
-
         return cop
         
 
@@ -68,13 +74,11 @@ for d in data:
     wrench_lf = d.f_lf
     wrench_rf = d.f_rf
 
-
     # Evaluation of the center of pressure from different methods
     hrp2 = HRP2()
     hrp2.update(q)
     cop = CenterOfPressure(hrp2)
 
-    cop_pos = cop.computeCoP(wrench_lf, wrench_rf)
-    print cop_pos.T
-    print cop.computeCoP2(wrench_lf, wrench_rf).T
+    print 'foot wrenches', cop.compute(wrench_lf, wrench_rf, 'FootWrenches').T
+    print 'foot cops    ', cop.compute(wrench_lf, wrench_rf, 'FootCoPs').T
     print '---'
