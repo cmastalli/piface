@@ -22,8 +22,8 @@ class CenterOfPressure:
         cop_rf = self.computeCoPFromWrench(self.wrench_RF)
         
         # Expressing the local CoP position into the world frame
-        w_X_lf = self.robot.data.oMi[self.robot.bodyToIdx['lf']]
-        w_X_rf = self.robot.data.oMi[self.robot.bodyToIdx['rf']]
+        w_X_lf = self.robot.data.oMi[self.robot.legs['lf_foot']]
+        w_X_rf = self.robot.data.oMi[self.robot.legs['rf_foot']]
         cop_lf_W = w_X_lf * cop_lf
         cop_rf_W = w_X_rf * cop_rf
         
@@ -38,8 +38,8 @@ class CenterOfPressure:
         return self.cop
 
     def computeThroughFootWrenches(self, wrench_lf, wrench_rf):
-        w_X_lf = self.robot.data.oMi[self.robot.bodyToIdx['lf']]
-        w_X_rf = self.robot.data.oMi[self.robot.bodyToIdx['rf']]
+        w_X_lf = self.robot.data.oMi[self.robot.legs['lf_foot']]
+        w_X_rf = self.robot.data.oMi[self.robot.legs['rf_foot']]
         self.wrench_lf_W = w_X_lf.act(pin.Force(wrench_lf[:3], wrench_lf[3:]))
         self.wrench_rf_W = w_X_rf.act(pin.Force(wrench_rf[:3], wrench_rf[3:]))
         self.wrench_T = (self.wrench_lf_W + self.wrench_rf_W).vector
