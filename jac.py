@@ -16,7 +16,7 @@ class jac:
 
 
 np.set_printoptions(suppress=True)
-from hyq import HyQ
+from robots.hyq import HyQ
 hyq = HyQ()
 
 j = jac(hyq)

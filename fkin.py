@@ -30,7 +30,7 @@ class fkin:
         pin.forwardKinematics(self.robot.model, self.robot.data, q, qd)
         
         frame_id = self.robot.model.getFrameId('lf_foot')
-        self.vel['lf_foot'] = self.getFrameVelocity(frame_id).linear
+        self.vel['lf_foot'] = self.getFrameVelocity(frame_id)#.linear
 
         frame_id = self.robot.model.getFrameId('lh_foot')
         self.vel['lh_foot'] = self.getFrameVelocity(frame_id).linear
@@ -66,22 +66,38 @@ class fkin:
     
     def getFrameVelocity(self, frame_id):
         f = self.robot.model.frames[frame_id]
+        vel = f.placement.actInv(self.robot.data.v[f.parent])
+        self.ff = self.robot.data.oMi[f.parent].act(f.placement)        
+        print self.ff.act(vel).linear.T
+        print self.robot.data.oMi[f.parent].act(self.robot.data.v[f.parent]).linear.T
+        
+        print  f.placement.actInv(self.robot.data.v[f.parent]).linear.T
+        print self.robot.data.v[f.parent].linear.T
+        print '---'
+        
         return f.placement.actInv(self.robot.data.v[f.parent])
 
     def getFrameAcceleration(self, frame_id):
         f = self.robot.model.frames[frame_id]
+        a = f.placement.actInv(self.robot.data.a[f.parent])
+        v = f.placement.actInv(self.robot.data.v[f.parent])
+        a.linear += pin.utils.cross(v.angular, v.linear)
+        print a.linear.T
+        
         return f.placement.actInv(self.robot.data.a[f.parent])
 
 
 np.set_printoptions(suppress=True)
-from hyq import HyQ
+from robots.hyq import HyQ
 hyq = HyQ()
 
 q = hyq.q0
 qd = pin.utils.zero(hyq.model.nv)
 qdd = pin.utils.zero(hyq.model.nv)
 
+qd[2] = 1.
+
 fk = fkin(hyq)
-print fk.computePosition(q)
+#print fk.computePosition(q)
 print fk.computeVelocity(q, qd)
-print fk.computeAcceleration(q, qd, qdd)
+#print fk.computeAcceleration(q, qd, qdd)
